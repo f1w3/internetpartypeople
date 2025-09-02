@@ -1,4 +1,4 @@
-import { ChannelType } from "discord-api-types/v10";
+import { ChannelType, MessageFlags } from "discord-api-types/v10";
 import { _channels_$_messages, _guilds_$_channels, Button, Components, DiscordHono, Modal, TextInput } from "discord-hono";
 
 const CONSTANTS = {
@@ -35,13 +35,13 @@ const app = new DiscordHono()
         const guild = c.interaction.guild;
         if (!guild) return c.res({
             content: "This command can only be used in a server.",
-            flags: 1 << 6,
+            flags: MessageFlags.Ephemeral,
         });
 
         const channelsRes = await c.rest('GET', _guilds_$_channels, [guild.id])
         if (!channelsRes.ok) return c.res({
             content: `Failed to fetch channels: ${channelsRes.status} ${channelsRes.statusText}`,
-            flags: 1 << 6,
+            flags: MessageFlags.Ephemeral,
         })
         const channels = await channelsRes.json()
 
@@ -73,7 +73,7 @@ const app = new DiscordHono()
         if (c.interaction.channel.type === ChannelType.GuildText && c.interaction.channel.parent_id !== eventsCategory.id) {
             return c.res({
                 content: `This command can only be used in a text channel under the ${eventsCategory.name} category.`,
-                flags: 1 << 6,
+                flags: MessageFlags.Ephemeral,
             });
         }
 
@@ -85,7 +85,7 @@ const app = new DiscordHono()
 
         return c.res({
             content: `Archived this channel to ${archivesCategory.name} category.`,
-            flags: 1 << 6,
+            flags: MessageFlags.Ephemeral,
         });
     })
     .modal(CONSTANTS.MODAL.CREATE.NAME, async (c) => {
@@ -97,13 +97,13 @@ const app = new DiscordHono()
         const guild = c.interaction.guild;
         if (!guild) return c.res({
             content: "This command can only be used in a server.",
-            flags: 1 << 6,
+            flags: MessageFlags.Ephemeral,
         });
 
         const channelsRes = await c.rest('GET', _guilds_$_channels, [guild.id])
         if (!channelsRes.ok) return c.res({
             content: `Failed to fetch channels: ${channelsRes.status} ${channelsRes.statusText}`,
-            flags: 1 << 6,
+            flags: MessageFlags.Ephemeral,
         })
         const channels = await channelsRes.json()
 
@@ -130,7 +130,7 @@ const app = new DiscordHono()
 
         return c.res({
             content: `Created a new event channel in ${eventsCategory.name} category.`,
-            flags: 1 << 6,
+            flags: MessageFlags.Ephemeral,
         });
     });
 
