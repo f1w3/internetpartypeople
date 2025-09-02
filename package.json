@@ -7,12 +7,20 @@
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
 		"test": "vitest",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"register": "bun run src/register.ts",
+        "lint": "bunx biome check --write src/"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.2.2",
 		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"@types/node": "^24.3.0",
+		"discord-api-types": "^0.38.22",
 		"typescript": "^5.5.2",
 		"vitest": "~3.2.0",
 		"wrangler": "^4.33.2"
+	},
+	"dependencies": {
+		"discord-hono": "^0.19.5"
 	}
 }
