@@ -1,3 +1,4 @@
+import { isMatch } from "date-fns";
 import { MessageFlags } from "discord-api-types/v10";
 import { _guilds_$_channels, Modal, TextInput } from "discord-hono";
 import { CONSTANTS } from "../constants.js";
@@ -21,9 +22,17 @@ const modal = new Modal(CONSTANTS.MODAL.CREATE.NAME, "イベントを作成す�
 	);
 
 export const modal_create = factory.modal(modal, async (c) => {
-	const eventDate = c.var.eventdate;
-	const eventName = c.var.eventname;
-	const eventUrl = c.var.eventurl;
+	const eventDate = c.var.eventdate || "";
+	const eventName = c.var.eventname || "";
+	const eventUrl = c.var.eventurl || "";
+
+	const result = isMatch(eventDate, "yyyy-MM-dd");
+
+	if (!result)
+		return c.res({
+			content: "Invalid date format. Please use yyyy-mm-dd.",
+			flags: MessageFlags.Ephemeral,
+		});
 
 	const guild = c.interaction.guild;
 	if (!guild)

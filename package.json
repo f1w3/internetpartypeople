@@ -9,7 +9,7 @@
 		"test": "vitest",
 		"cf-typegen": "wrangler types",
 		"register": "bun run src/register.ts",
-        "lint": "bunx biome check --write src/"
+		"lint": "bunx biome check --write src/"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.2",
@@ -21,6 +21,7 @@
 		"wrangler": "^4.33.2"
 	},
 	"dependencies": {
+		"date-fns": "^4.1.0",
 		"discord-hono": "^0.19.5"
 	}
 }
