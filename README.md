@@ -1,3 +1,3 @@
-#internet party people bot
+# internet party people bot
 
 discord-honoのテスト等
