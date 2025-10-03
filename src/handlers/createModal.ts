@@ -71,7 +71,7 @@ export const modal_create = factory.modal(modal, async (c) => {
 	}
 
 	await c.rest("POST", _guilds_$_channels, [guild.id], {
-		name: `${eventName}-${eventDate}`,
+		name: `${eventDate}-${eventName}`,
 		type: 0,
 		topic: eventUrl ?? "",
 		parent_id: eventsCategory.id,
