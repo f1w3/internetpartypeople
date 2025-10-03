@@ -3,7 +3,7 @@ import { CONSTANTS } from "../constants.js";
 import { factory } from "../init.js";
 
 export const command_create = factory.command(
-	new Command("create", "create event"),
+	new Command("register", "register event"),
 	(c) => {
 		return c.resModal(
 			new Modal(CONSTANTS.MODAL.CREATE.NAME, "イベントを作成")
