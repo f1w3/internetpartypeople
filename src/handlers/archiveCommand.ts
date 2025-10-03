@@ -21,10 +21,10 @@ export const command_archive = factory.command(
 		const channels = await channelsRes.json();
 
 		const eventsCategorys = channels.filter(
-			(channel) => channel.name?.includes("events") && channel.type === 4,
+			(channel) => channel.name?.includes("events") && channel.type === ChannelType.GuildCategory,
 		);
 		const archivesCategorys = channels.filter(
-			(channel) => channel.name?.includes("archives") && channel.type === 4,
+			(channel) => channel.name?.includes("archives") && channel.type === ChannelType.GuildCategory,
 		);
 
 		let eventsCategory = eventsCategorys[0];
@@ -37,7 +37,7 @@ export const command_archive = factory.command(
 				[guild.id],
 				{
 					name: "events",
-					type: 4,
+					type: ChannelType.GuildCategory,
 					position: 0,
 				},
 			);
@@ -51,7 +51,7 @@ export const command_archive = factory.command(
 				[guild.id],
 				{
 					name: "archives",
-					type: 4,
+					type: ChannelType.GuildCategory,
 					position: 1,
 				},
 			);
@@ -69,6 +69,28 @@ export const command_archive = factory.command(
 			});
 		}
 
+		const archiveChannels = channels.filter(
+			(channel) => channel.type === ChannelType.GuildText && channel.parent_id === archivesCategory.id,
+		);
+
+		// YYYY-MM-DD-EventName
+		const archivesDate = archiveChannels
+		.map(
+			(channel) => channel?.name?.split("-").splice(0, 3).join("-"))
+		.filter(
+			(name): name is string => typeof name === "string",
+		).map(
+			(name) => new Date(name),
+		).sort((a, b) => b.getTime() - a.getTime());
+
+		const targetDate = new Date(
+			`${c.interaction.channel.name?.split("-").splice(0, 3).join("-")}T00:00:00`,
+		);
+
+		const position = archivesDate.findIndex((date) => targetDate >= date) + 1;
+
+		// move to archives category
+		
 		await c.rest(
 			"PATCH",
 			_guilds_$_channels,
@@ -77,7 +99,7 @@ export const command_archive = factory.command(
 				{
 					id: c.interaction.channel.id,
 					parent_id: archivesCategory.id,
-					position: 0,
+					position: position
 				},
 			],
 		);

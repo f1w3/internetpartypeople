@@ -1,5 +1,5 @@
 import { isMatch } from "date-fns";
-import { MessageFlags } from "discord-api-types/v10";
+import { ChannelType, MessageFlags } from "discord-api-types/v10";
 import { _guilds_$_channels, Modal, TextInput } from "discord-hono";
 import { CONSTANTS } from "../constants.js";
 import { factory } from "../init.js";
@@ -50,7 +50,7 @@ export const modal_create = factory.modal(modal, async (c) => {
 	const channels = await channelsRes.json();
 
 	const eventsCategorys = channels.filter(
-		(channel) => channel.name?.includes("events") && channel.type === 4,
+		(channel) => channel.name?.includes("events") && channel.type === ChannelType.GuildCategory,
 	);
 
 	let eventsCategory = eventsCategorys[0];
@@ -62,7 +62,7 @@ export const modal_create = factory.modal(modal, async (c) => {
 			[guild.id],
 			{
 				name: "events",
-				type: 4,
+				type: ChannelType.GuildCategory,
 				position: 0,
 			},
 		);
