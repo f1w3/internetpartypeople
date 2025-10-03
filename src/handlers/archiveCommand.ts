@@ -1,85 +1,78 @@
 import { ChannelType, MessageFlags } from "discord-api-types/v10";
 import { _guilds_$_channels, Command } from "discord-hono";
-import { factory } from "../init.js";
+import { factory } from "../init";
+import { sortChannelsByDate } from "../utils/sortChannelsByDate";
 
 export const command_archive = factory.command(
 	new Command("archive", "archive event"),
 	async (c) => {
 		const guild = c.interaction.guild;
-		if (!guild)
+		if (!guild) {
 			return c.res({
 				content: "This command can only be used in a server.",
 				flags: MessageFlags.Ephemeral,
 			});
+		}
 
 		const channelsRes = await c.rest("GET", _guilds_$_channels, [guild.id]);
-		if (!channelsRes.ok)
+		if (!channelsRes.ok) {
 			return c.res({
 				content: `Failed to fetch channels: ${channelsRes.status} ${channelsRes.statusText}`,
 				flags: MessageFlags.Ephemeral,
 			});
+		}
 		const channels = await channelsRes.json();
 
-		const eventsCategorys = channels.filter(
-			(channel) => channel.name?.includes("events") && channel.type === 4,
+		// events / archivesカテゴリを取得
+		const eventsCategory = channels.find(
+			(ch) => ch.name === "events" && ch.type === ChannelType.GuildCategory,
 		);
-		const archivesCategorys = channels.filter(
-			(channel) => channel.name?.includes("archives") && channel.type === 4,
+		let archivesCategory = channels.find(
+			(ch) => ch.name === "archives" && ch.type === ChannelType.GuildCategory,
 		);
 
-		let eventsCategory = eventsCategorys[0];
-		let archivesCategory = archivesCategorys[0];
-
-		if (!eventsCategory) {
-			const createdEventCategoryRes = await c.rest(
-				"POST",
-				_guilds_$_channels,
-				[guild.id],
-				{
-					name: "events",
-					type: 4,
-					position: 0,
-				},
-			);
-			const createdEventCategory = await createdEventCategoryRes.json();
-			eventsCategory = createdEventCategory;
-		}
+		// 無ければ作成
 		if (!archivesCategory) {
-			const createdArchivesCategoryRes = await c.rest(
-				"POST",
-				_guilds_$_channels,
-				[guild.id],
-				{
-					name: "archives",
-					type: 4,
-					position: 1,
-				},
-			);
-			const createdArchivesCategory = await createdArchivesCategoryRes.json();
-			archivesCategory = createdArchivesCategory;
+			const created = await c.rest("POST", _guilds_$_channels, [guild.id], {
+				name: "archives",
+				type: ChannelType.GuildCategory,
+				position: 1,
+			});
+			archivesCategory = await created.json();
 		}
 
+		// 今いるチャンネルが events 配下か確認
 		if (
-			c.interaction.channel.type === ChannelType.GuildText &&
-			c.interaction.channel.parent_id !== eventsCategory.id
+			c.interaction.channel.type !== ChannelType.GuildText ||
+			c.interaction.channel.parent_id !== eventsCategory?.id
 		) {
 			return c.res({
-				content: `This command can only be used in a text channel under the ${eventsCategory.name} category.`,
+				content: `This command can only be used in a text channel under the events category.`,
 				flags: MessageFlags.Ephemeral,
 			});
 		}
 
+		// archives内の既存チャンネル + 今回のチャンネルをまとめてソート
+		const archiveChannels = channels.filter(
+			(ch) =>
+				ch.type === ChannelType.GuildText &&
+				ch.parent_id === archivesCategory.id,
+		);
+
+		const targetChannel = c.interaction.channel;
+
+		const sorted = sortChannelsByDate(archiveChannels, targetChannel, "desc");
+
+		// bulk update で並び替え
 		await c.rest(
 			"PATCH",
 			_guilds_$_channels,
 			[guild.id],
-			[
-				{
-					id: c.interaction.channel.id,
-					parent_id: archivesCategory.id,
-					position: 0,
-				},
-			],
+			sorted.map((x, idx) => ({
+				id: x.ch.id,
+				parent_id: archivesCategory.id,
+				position: idx,
+			})),
 		);
 
 		return c.res({
